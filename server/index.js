@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
 const rulesURL = 'https://api.twitter.com/2/tweets/search/stream/rules'
 const streamURL = 'https://api.twitter.com/2/tweets/search/stream?tweet.fields=public_metrics&expansions=author_id'
 
-const rules = [{value: 'coding'}]
+//const rules = [{value: 'coding'}]
 
 // get stream rules
 async function getRules() {
@@ -33,9 +33,9 @@ async function getRules() {
 }
 
 // set stream rules
-async function setRules() {
+async function setRules(tags) {
     const data = {
-        add: rules
+        add: tags
     }
 
     const response = await needle('post', rulesURL, data, {
@@ -89,20 +89,25 @@ function streamTweets(socket) {
     })
 }
 
+async function refreshRules(tags) {
+    let currentRules
+
+    // get the rules
+    currentRules = await getRules()
+
+    // clean up rules
+    await deleteRules(currentRules)
+
+    // set rules
+    await setRules(tags)
+}
+
 io.on('connection', async () => {
     console.log('Client connected...')
 
-    let currentRules
-
     try {
-        // get the rules
-        currentRules = await getRules()
-
-        // clean up rules
-        await deleteRules(currentRules)
-
-        // set rules
-        await setRules()
+        refreshRules()
+        
     } catch (error) {
         console.error(error)
         process.exit(1)
