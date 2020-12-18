@@ -102,11 +102,16 @@ async function refreshRules(tags) {
     await setRules(tags)
 }
 
-io.on('connection', async () => {
+io.on('connection', async (socket) => {
+    socket.on('tagAdded', async (values) => {
+        console.log(values)
+        await refreshRules(values)
+    })
+
     console.log('Client connected...')
 
     try {
-        refreshRules()
+        await refreshRules()
         
     } catch (error) {
         console.error(error)

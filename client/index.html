@@ -21,9 +21,6 @@
                 padding: 3px;
             }
         </style>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js" integrity="sha512-9UR1ynHntZdqHnwXKTaOm1s6V9fExqejKvg5XMawEMToW4sSw+3jtLrYfZPijvnwnnE8Uol1O9BcAskoxgec+g==" crossorigin="anonymous"></script>
     </head>
     <body>
         <nav class="navbar navbar-dark bg-dark">
@@ -40,37 +37,10 @@
             <div id="tweet-stream"></div>
         </div>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js" integrity="sha512-9UR1ynHntZdqHnwXKTaOm1s6V9fExqejKvg5XMawEMToW4sSw+3jtLrYfZPijvnwnnE8Uol1O9BcAskoxgec+g==" crossorigin="anonymous"></script>
         <script>
-            $("#tags").on('itemAdded', async function(event) {
-                console.log('item added : '+event.item);
-                const tags = getTags();
-                console.log(tags)
-                const values = getValues(tags);
-                console.log(values)
-
-                await refreshRules(values)
-            });
-            $("#tags").on('itemRemoved', async function(event) {
-                console.log('item removed : '+event.item);
-                const tags = getTags();
-                console.log(tags)
-                const values = getValues(tags);
-                console.log(values)
-
-                await refreshRules(values)
-            });
-
-            function getTags() {
-                return $("#tags").tagsinput('items');
-            }
-
-            function getValues(tags) {
-                const inputs = Array.from(tags)
-                const objInputs = inputs.map(key => ({value: key}))
-                return JSON.stringify(objInputs)
-            }
-
-
             const tweetStream = document.getElementById('tweet-stream')
             const tweets = []
 
@@ -103,6 +73,40 @@
 
                 setTimeout(() => tweetEl.remove(), 10000)
             })
+
+            $("#tags").on('itemAdded', async function(event) {
+                console.log('item added : '+event.item);
+                const tags = getTags();
+                console.log(tags)
+                const values = getValues(tags);
+                console.log(values)
+
+                var socket = io();
+                socket.emit('tagAdded', values)
+                //await refreshRules(values)
+            });
+            $("#tags").on('itemRemoved', async function(event) {
+                console.log('item removed : '+event.item);
+                const tags = getTags();
+                console.log(tags)
+                const values = getValues(tags);
+                console.log(values)
+
+                var socket = io();
+                socket.emit('tagAdded', values)
+                //await refreshRules(values)
+            });
+
+            function getTags() {
+                return $("#tags").tagsinput('items');
+            }
+
+            function getValues(tags) {
+                const inputs = Array.from(tags)
+                const objInputs = inputs.map(key => ({value: key}))
+                return JSON.stringify(objInputs)
+            }
+
         </script>
     </body>
 </html>
